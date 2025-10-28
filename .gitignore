@@ -10,5 +10,6 @@ server.log
 .DS_Store
 .vscode/
 .nvmrc
+test.http
 # config
 .config
