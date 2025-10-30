@@ -1,16 +1,17 @@
 import type { Request, Response } from "express";
 import { respondWithJSON, respondWithError } from "../app/helperJson.js";
+import { BadRequestError } from "./errors.js";
 
 export function handlerValchip(req: Request, res: Response) {
-  try {
+ 
     const { body } = req.body as { body?: string };
 
     if (typeof body !== "string") {
-      return respondWithError(res, 400, "Invalid payload");
+        throw new BadRequestError("Invalid payload");
     }
 
     if (body.length > 140) {
-      return respondWithError(res, 400, "Chirp is too long");
+      throw new BadRequestError("Chirp is too long. Max length is 140");
     }
     const badWords =  ["fornax", "sharbert", "kerfuffle"];
     
@@ -22,10 +23,9 @@ export function handlerValchip(req: Request, res: Response) {
         words[i] = "****";
       }
     }
-    const cleaned = words.join(" ");
+    const cleanedBody = words.join(" ");
 
-    return respondWithJSON(res, 200, { cleaned });
-  } catch {
-    return respondWithError(res, 400, "Something went wrong");
-  }
-}
+    return respondWithJSON(res, 200, { cleanedBody });
+  }  
+ 
+ 
