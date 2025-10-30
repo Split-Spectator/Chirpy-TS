@@ -13,3 +13,4 @@ server.log
 test.http
 # config
 .config
+drizzle.config.ts
