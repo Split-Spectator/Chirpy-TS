@@ -10,7 +10,7 @@ server.log
 .DS_Store
 .vscode/
 .nvmrc
-test.http
+src/test.http
 # config
 .config
-drizzle.config.ts
+
