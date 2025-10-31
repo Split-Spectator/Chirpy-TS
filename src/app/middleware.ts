@@ -8,7 +8,7 @@ export function middlewareMetricsInc(req: Request, res: Response, next: NextFunc
   res.on("finish", () => {
     const code = res.statusCode;
     if (code)  {
-      config.fileserverHits += 1;
+      config.api.fileserverhits += 1;
      }
     });
     

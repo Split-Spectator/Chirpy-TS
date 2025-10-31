@@ -3,7 +3,7 @@ import type { Response, Request, NextFunction } from "express";
 
   
     export const handlerMetrics = (req: Request, res: Response) => {
-        const hits = config.fileserverHits
+        const hits = config.api.fileserverhits
         const html = `
             <html>
             <body>

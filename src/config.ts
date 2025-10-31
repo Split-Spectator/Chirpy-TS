@@ -5,15 +5,20 @@ const migrationConfig: MigrationConfig = {
   migrationsFolder: "./src/db/migrations",
 };
 
+type Config = {
+  api: APIConfig;
+  db: DBConfig;
+};
+
+type APIConfig = {
+  fileserverhits: number;
+};
+
 type DBConfig = {
   url: string;
   migrationConfig: MigrationConfig;
+  platform: string;
 };
- 
- type APIConfig = {
-    fileserverHits: number;
-    db: DBConfig;
-  };
   
  
   export function getEnv(key: string): string {
@@ -22,10 +27,13 @@ type DBConfig = {
     return val;
   }
  
-  export const config: APIConfig = {
-    fileserverHits: 0,
+  export const config: Config = {
+    api: {
+      fileserverhits: 0,
+    },
     db: {
       url: getEnv("DB_URL"),
-      migrationConfig,
-   } 
+      migrationConfig: migrationConfig,
+      platform: getEnv("PLATFORM"),
+    }
   };

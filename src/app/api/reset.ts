@@ -1,14 +1,12 @@
 import {config} from "../../config.js"
 import type { Response, Request, NextFunction } from "express";
+import { deleteUsers } from "../../db/queries/users.js";
 
 
-export function handlerReset(req: Request, res: Response)  {
-    config.fileserverHits = 0;
-    let count = config.fileserverHits;
-    let headers = {
-        "Content-Type": "text/plain; charset=utf-8"
-    }
-    res.set(headers);
-    res.status(200).send(`fileserverHits reset back to ${count}`);
-    res.end();
+export async function handlerReset(req: Request, res: Response)  {
+        if (config.db.platform !== "dev") {
+            return res.status(403).json({ error: "Forbidden" });
+        }
+        await deleteUsers();
+        return res.status(200).json({ message: "All users deleted" });
 }
