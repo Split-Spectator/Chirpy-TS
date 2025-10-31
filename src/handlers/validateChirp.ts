@@ -1,10 +1,15 @@
 import type { Request, Response } from "express";
 import { respondWithJSON, respondWithError } from "../app/helperJson.js";
 import { BadRequestError } from "./errors.js";
+import {createChirp} from "../db/queries/chips.js";
 
-export function handlerValchip(req: Request, res: Response) {
+export async function handlerValchip(req: Request, res: Response) {
  
-    const { body } = req.body as { body?: string };
+    const { body, userId} = req.body as { body?: string, userId?: string};
+  
+    if (!userId || typeof userId !== "string") {
+      return res.status(400).json({ error: "Missing userId" });
+    }
 
     if (typeof body !== "string") {
         throw new BadRequestError("Invalid payload");
@@ -23,9 +28,14 @@ export function handlerValchip(req: Request, res: Response) {
         words[i] = "****";
       }
     }
-    const cleanedBody = words.join(" ");
+    const CleanBody = words.join(" ");
+    const chirp = await createChirp({ body: CleanBody, userId: userId });
+            if (!chirp) {
+               return respondWithError(res, 500, "Failed to create chirp");
+            }
 
-    return respondWithJSON(res, 200, { cleanedBody });
+
+    return respondWithJSON(res, 201, { chirp });
   }  
  
  

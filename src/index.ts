@@ -32,7 +32,7 @@ app.get("/admin/metrics", (req, res, next) => {
 app.post("/admin/reset", (req, res, next) => {
   Promise.resolve(handlerReset(req, res)).catch(next);
 });
-app.post("/api/validate_chirp", (req, res, next) => {
+app.post("/api/chirps", (req, res, next) => {
   Promise.resolve(handlerValchip(req, res)).catch(next);
 });
 app.post("/api/users", (req, res, next) => {
