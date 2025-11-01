@@ -1,7 +1,7 @@
 import { db } from "../index.js";
 import {  chirps, NewChirp} from "../schema.js";
 import { randomUUID } from "crypto";
-import { asc  } from "drizzle-orm";
+import { asc, eq  } from "drizzle-orm";
 
 
 export async function createChirp(chirp: NewChirp) {
@@ -12,7 +12,15 @@ export async function createChirp(chirp: NewChirp) {
   return result;
 }
 
-export const GetChirps = async () => {
+export const GetAllChirps = async () => {
   const rows = await db.select().from(chirps).orderBy(asc(chirps.createdAt));
   return rows
+};
+
+
+export const GetChirp = async (chirpID: string) => {
+  const [row] = await db.select().from(chirps).where(eq(chirps.id, chirpID));
+  if (!row)
+      return null;
+  return row
 };

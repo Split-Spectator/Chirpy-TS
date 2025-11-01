@@ -1,11 +1,15 @@
 import type { Response } from "express";
  
+export type ErrorBody = { error: string };
+
 export function respondWithError(res: Response, code: number, message: string) {
-  respondWithJSON(res, code, { error: message });
+  return respondWithJSON<ErrorBody>(res, code, { error: message });
 }
 
-export function respondWithJSON(res: Response, code: number, message: any) {
-  res.header("Content-Type", "application/json");
-  const body = JSON.stringify(message);
-  res.status(code).send(body);
+export function respondWithJSON<T>(res: Response, code: number, payload: T) {
+  return res.status(code).json(payload); 
+}
+
+export function respondNoContent(res: Response) {
+  return res.sendStatus(204);
 }
