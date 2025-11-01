@@ -7,7 +7,7 @@ import {middlewareLogResponses} from "./app/log.js";
 import {middlewareMetricsInc, errorMiddleWare,} from "./app/middleware.js";
 import { handlerMetrics } from "./app/api/handlerMetrics.js";
 import {handlerReset} from "./app/api/reset.js";
-import {handlerUsers} from "./handlers/handlerUsers.js"
+import {handlerUsers, handlerLogin} from "./handlers/handlerUsers.js"
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle } from "drizzle-orm/postgres-js";
 
@@ -43,6 +43,9 @@ app.post("/api/chirps", (req, res, next) => {
 });
 app.post("/api/users", (req, res, next) => {
   Promise.resolve(handlerUsers(req, res)).catch(next);
+});
+app.post("/api/login", (req, res, next) => {
+  Promise.resolve(handlerLogin(req, res)).catch(next);
 });
 
 app.use(errorMiddleWare);

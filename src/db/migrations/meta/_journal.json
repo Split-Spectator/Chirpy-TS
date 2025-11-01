@@ -15,6 +15,13 @@
       "when": 1761951857572,
       "tag": "0001_reflective_wild_child",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762025748376,
+      "tag": "0002_amusing_thena",
+      "breakpoints": true
     }
   ]
 }
