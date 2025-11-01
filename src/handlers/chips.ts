@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { respondWithJSON, respondWithError } from "../app/helperJson.js";
 import { BadRequestError } from "./errors.js";
-import {createChirp} from "../db/queries/chips.js";
+import {createChirp, GetChirps} from "../db/queries/chips.js";
 
 export async function handlerValchip(req: Request, res: Response) {
  
@@ -39,3 +39,11 @@ export async function handlerValchip(req: Request, res: Response) {
   }  
  
  
+ 
+export async function handlerGetChirps(req: Request, res: Response){
+  const chirps = await GetChirps();
+        if (chirps.length === 0) {
+          return respondWithJSON(res, 200, { chirps: []});
+        }
+    return respondWithJSON(res, 200, { chirps });
+}
