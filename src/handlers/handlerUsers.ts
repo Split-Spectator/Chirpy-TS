@@ -2,8 +2,12 @@ import type { Request, Response, NextFunction,  } from "express";
 import { respondWithJSON, respondWithError } from "../app/helperJson.js";
 import { BadRequestError } from "./errors.js";
 import {createUser, GetUser} from "../db/queries/users.js";
-import {hashPassword, checkPasswordHash } from "./auth.js";
-import { NewUser } from "src/db/schema.js";
+import {hashPassword, checkPasswordHash, makeJWT } from "./auth.js";
+import { NewUser } from "../db/schema.js";
+
+//import { config } from "process";
+import { config } from "../config.js";
+
 
  
 export async function handlerUsers(req: Request, res: Response) {
@@ -36,7 +40,7 @@ export async function handlerUsers(req: Request, res: Response) {
  
 
 export async function handlerLogin(req: Request, res: Response) {
-   const { email, password } = req.body as { email?: string; password?: string };
+   let { email, password, expiresInSeconds } = req.body as { email?: string; password?: string; expiresInSeconds?: number; };
  
    if (typeof email !== "string") {
      return respondWithError(res, 400, "Invalid email");
@@ -44,7 +48,9 @@ export async function handlerLogin(req: Request, res: Response) {
    if (typeof password !== "string") {
      return respondWithError(res, 400, "Invalid password type");
    }
- 
+   if (typeof expiresInSeconds !== "number") {
+      expiresInSeconds = 3600;
+  }
    const user = await GetUser(email);
    if (!user) {
      return respondWithError(res, 401, "Incorrect email or password");
@@ -59,12 +65,15 @@ export async function handlerLogin(req: Request, res: Response) {
    if (!ok) {
      return respondWithError(res, 401, "Incorrect email or password");
    }
+
+   const jwtToken = makeJWT(user.id, expiresInSeconds, config.api.secret);
  
    return respondWithJSON(res, 200, {
      id: user.id,
      email: user.email,
      createdAt: user.createdAt,
      updatedAt: user.updatedAt,
+     token: jwtToken,
    });
  }
  

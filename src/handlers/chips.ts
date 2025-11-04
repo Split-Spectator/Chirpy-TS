@@ -1,17 +1,26 @@
 import type { Request, Response } from "express";
 import { respondWithJSON, respondWithError } from "../app/helperJson.js";
-import { BadRequestError } from "./errors.js";
+import { BadRequestError, UserNotAuthenticatedError } from "./errors.js";
 import {createChirp, GetAllChirps, GetChirp} from "../db/queries/chips.js";
 import { register } from "module";
+import { getBearerToken } from "./auth.js";
+import { config } from "../config.js";
+import { validateJWT } from "./auth.js";
 
 export async function handlerValchip(req: Request, res: Response) {
- 
     const { body, userId} = req.body as { body?: string, userId?: string};
-  
-    if (!userId || typeof userId !== "string") {
-      return res.status(400).json({ error: "Missing userId" });
+    let bear = await getBearerToken(req);
+    let ok = validateJWT(bear, config.api.secret);
+    if (!ok) {
+      return respondWithError(res, 401, "JWT not valid")
     }
 
+    // ! causes failure
+/*
+    if (!userId || userId !== ok) {
+      return respondWithError(res, 401, "UserID does not match session token")
+    }
+*/
     if (typeof body !== "string") {
         throw new BadRequestError("Invalid payload");
     }
@@ -30,7 +39,7 @@ export async function handlerValchip(req: Request, res: Response) {
       }
     }
     const CleanBody = words.join(" ");
-    const chirp = await createChirp({ body: CleanBody, userId: userId });
+    const chirp = await createChirp({ body: CleanBody, userId: ok });
             if (!chirp) {
                return respondWithError(res, 500, "Failed to create chirp");
             }
@@ -39,7 +48,7 @@ export async function handlerValchip(req: Request, res: Response) {
       createdAt: chirp.createdAt,
       updatedAt: chirp.updatedAt,
       body: chirp.body,
-      userId: chirp.userId,
+      userId: ok,
     });
   }  
  

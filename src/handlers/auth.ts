@@ -1,6 +1,9 @@
 import * as argon2 from "argon2";
 import { JsonWebTokenError } from "jsonwebtoken";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { getEnv } from "../config.js";  
+import type { Request, Response, NextFunction,  } from "express";
+import { UserNotAuthenticatedError } from "./errors.js";
 
 export async function hashPassword(password: string): Promise<string> {
 try {
@@ -33,7 +36,18 @@ export function makeJWT(userID: string, expiresIn: number, secret: string): stri
 
 export function validateJWT(tokenString: string, secret: string): string {
   const decoded = jwt.verify(tokenString, secret) as JwtPayload;
-  if (!decoded.sub) throw new Error("invalid token");
+    if (!decoded.sub) throw new Error("invalid token");
   return decoded.sub;
 }
 
+export const getBearerToken = (req: Request) => {
+  const rawToken = req.get("Authorization");
+    if (rawToken === undefined) {
+      throw new UserNotAuthenticatedError("Invalid JWT");
+    }
+  const splitToken = rawToken.split(" ");
+    if (splitToken.length < 2 || splitToken[0] !== "Bearer") {
+      throw new UserNotAuthenticatedError("Invalid JWT");
+    }
+  return splitToken[1];
+};

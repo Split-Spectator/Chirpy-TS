@@ -12,6 +12,7 @@ type Config = {
 
 type APIConfig = {
   fileserverhits: number;
+  secret: string;
 };
 
 type DBConfig = {
@@ -30,6 +31,7 @@ type DBConfig = {
   export const config: Config = {
     api: {
       fileserverhits: 0,
+      secret: getEnv("SECRET"),
     },
     db: {
       url: getEnv("DB_URL"),
