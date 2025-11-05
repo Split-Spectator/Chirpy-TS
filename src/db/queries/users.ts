@@ -14,18 +14,14 @@ export async function deleteUsers() {
   await db.delete(users);
 }
 
-export const GetUser = async (email: string) => {
-  const [row] = await db.select().from(users).where(eq(users.email, email));
-  if (!row)
-      return null;
-  return row
-};
-export const GetUserByID = async (id: string) => {
-  const [row] = await db.select().from(users).where(eq(users.id, id));
-  if (!row)
-      return null;
-  return row
-};
+async function getUserBy<K extends "id" | "email">(key: K, value: string) {
+  const col = key === "id" ? users.id : users.email;
+  const [row] = await db.select().from(users).where(eq(col, value));
+  return row ?? null;
+}
+
+export const GetUser = (email: string) => getUserBy("email", email);
+export const GetUserByID = (id: string) => getUserBy("id", id);
 
 
 export async function addRefreshToken(refresh_token: NewRefreshToken) {
