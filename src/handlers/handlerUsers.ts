@@ -80,48 +80,39 @@ export async function handlerLogin(req: Request, res: Response) {
 
 
  export async function resetPassword(req: Request, res: Response) {
-  let { email, password } = req.body as { email: string; password: string; };
-      let bear = await getBearerToken(req);
-      let ok: string | false = false;
-      try { 
-        ok = validateJWT(bear, config.api.secret);
-      } catch {
-        ok = false;
-      }
-      if (!ok) {
-        return respondWithError(res, 401, "Invalid JWT")
-      }
-  const userByID = await GetUserByID(ok);
-   if (!userByID) {
-     return respondWithError(res, 401, "Unable to verify user");
-   }
+  const { email, password } = req.body as { email: string; password: string };
 
-   const hashedPassword = await hashPassword(password);
+  const bearer = await getBearerToken(req);
+  let userId: string;
+  try {
+    userId = validateJWT(bearer, config.api.secret);
+  } catch {
+    return respondWithError(res, 401, "Invalid JWT");
+  }
 
-   const userInfo = {
-    id: userByID.id,
-    email: email,
-    hashedPassword: hashedPassword,
-    createdAt: userByID.createdAt,
-    updatedAt: userByID.updatedAt,
-   }
+  const user = await GetUserByID(userId);
+  if (!user) return respondWithError(res, 401, "Unable to verify user");
 
-   try {
-    await resetPasswordQuery(userInfo);
-   } catch {
-    return respondWithError(res, 500, "Failed to update password / email")
-   }
+  const hashedPassword = await hashPassword(password);
 
-   const user = await GetUserByID(userByID.id);
-   if (!user) {
-     return respondWithError(res, 401, "Unable to verify user");
-   }
+  try {
+    await resetPasswordQuery({
+      id: user.id,
+      email,
+      hashedPassword,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    });
+  } catch {
+    return respondWithError(res, 500, "Failed to update password / email");
+  }
+  const updated = await GetUserByID(user.id);
+  if (!updated) return respondWithError(res, 500, "User not found after update");
 
-   return respondWithJSON(res, 200, {
-    id: user.id,
-    email: user.email,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
+  return respondWithJSON(res, 200, {
+    id: updated.id,
+    email: updated.email,
+    createdAt: updated.createdAt,
+    updatedAt: updated.updatedAt,
   });
-
- }
+}
