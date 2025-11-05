@@ -1,5 +1,5 @@
 import { db } from "../index.js";
-import { NewUser, users, NewRefreshToken, SelectRefreshToken, refresh_tokens } from "../schema.js";
+import { NewUser, SelectUser, users, NewRefreshToken, SelectRefreshToken, refresh_tokens } from "../schema.js";
 import {  eq, sql   } from "drizzle-orm";
 
 export async function createUser(user: NewUser) {
@@ -16,6 +16,12 @@ export async function deleteUsers() {
 
 export const GetUser = async (email: string) => {
   const [row] = await db.select().from(users).where(eq(users.email, email));
+  if (!row)
+      return null;
+  return row
+};
+export const GetUserByID = async (id: string) => {
+  const [row] = await db.select().from(users).where(eq(users.id, id));
   if (!row)
       return null;
   return row
@@ -48,5 +54,16 @@ export const revokeToken = async (token: string) => {
     revokedAt: sql`NOW()` ,
   })
   .where(eq(refresh_tokens.token, token));
+}
+
+
+export const resetPasswordQuery = async (userInfo: SelectUser) => {
+    await db.update(users)
+    .set({ 
+      updatedAt: sql`NOW()` ,
+      hashedPassword: userInfo.hashedPassword,
+      email: userInfo.email, 
+    })
+    .where(eq(users.id, userInfo.id));
 }
 

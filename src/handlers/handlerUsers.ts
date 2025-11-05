@@ -1,11 +1,10 @@
 import type { Request, Response, NextFunction,  } from "express";
 import { respondWithJSON, respondWithError } from "../app/helperJson.js";
 import { BadRequestError } from "./errors.js";
-import {createUser, GetUser, addRefreshToken} from "../db/queries/users.js";
+import {createUser, GetUser, addRefreshToken, GetUserByID, resetPasswordQuery} from "../db/queries/users.js";
 import {hashPassword, checkPasswordHash, makeJWT, makeRefreshToken } from "./auth.js";
 import { NewUser } from "../db/schema.js";
-
-//import { config } from "process";
+import { getBearerToken, validateJWT } from "./auth.js";
 import { config } from "../config.js";
 
 
@@ -77,3 +76,52 @@ export async function handlerLogin(req: Request, res: Response) {
    });
  }
  
+
+
+
+ export async function resetPassword(req: Request, res: Response) {
+  let { email, password } = req.body as { email: string; password: string; };
+      let bear = await getBearerToken(req);
+      let ok: string | false = false;
+      try { 
+        ok = validateJWT(bear, config.api.secret);
+      } catch {
+        ok = false;
+      }
+      if (!ok) {
+        return respondWithError(res, 401, "Invalid JWT")
+      }
+  const userByID = await GetUserByID(ok);
+   if (!userByID) {
+     return respondWithError(res, 401, "Unable to verify user");
+   }
+
+   const hashedPassword = await hashPassword(password);
+
+   const userInfo = {
+    id: userByID.id,
+    email: email,
+    hashedPassword: hashedPassword,
+    createdAt: userByID.createdAt,
+    updatedAt: userByID.updatedAt,
+   }
+
+   try {
+    await resetPasswordQuery(userInfo);
+   } catch {
+    return respondWithError(res, 500, "Failed to update password / email")
+   }
+
+   const user = await GetUserByID(userByID.id);
+   if (!user) {
+     return respondWithError(res, 401, "Unable to verify user");
+   }
+
+   return respondWithJSON(res, 200, {
+    id: user.id,
+    email: user.email,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  });
+
+ }

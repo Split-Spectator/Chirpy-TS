@@ -9,7 +9,7 @@ import {middlewareLogResponses} from "./app/log.js";
 import {middlewareMetricsInc, errorMiddleWare,} from "./app/middleware.js";
 import { handlerMetrics } from "./app/api/handlerMetrics.js";
 import {handlerReset} from "./app/api/reset.js";
-import {handlerUsers, handlerLogin} from "./handlers/handlerUsers.js"
+import {handlerUsers, handlerLogin, resetPassword} from "./handlers/handlerUsers.js"
 import { refreshToken, revokeRefreshToken } from "./handlers/auth.js";
 
 
@@ -54,6 +54,9 @@ app.post("/api/refresh", (req, res, next) => {
 });
 app.post("/api/revoke", (req, res, next) => {
   Promise.resolve(revokeRefreshToken(req, res)).catch(next);
+});
+app.put("/api/users", (req, res, next) => {
+  Promise.resolve(resetPassword(req, res)).catch(next);
 });
 
 app.use(errorMiddleWare);

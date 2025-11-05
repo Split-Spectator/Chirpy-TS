@@ -3,9 +3,9 @@ import { respondWithJSON, respondWithError } from "../app/helperJson.js";
 import { BadRequestError, UserNotAuthenticatedError } from "./errors.js";
 import {createChirp, GetAllChirps, GetChirp} from "../db/queries/chips.js";
 import { register } from "module";
-import { getBearerToken } from "./auth.js";
+import { getBearerToken, validateJWT } from "./auth.js";
 import { config } from "../config.js";
-import { validateJWT } from "./auth.js";
+
 
 export async function handlerValchip(req: Request, res: Response) {
     const { body, userId} = req.body as { body?: string, userId?: string};
