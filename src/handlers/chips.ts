@@ -10,17 +10,22 @@ import { validateJWT } from "./auth.js";
 export async function handlerValchip(req: Request, res: Response) {
     const { body, userId} = req.body as { body?: string, userId?: string};
     let bear = await getBearerToken(req);
-    let ok = validateJWT(bear, config.api.secret);
+    let ok: string | false = false;
+    try { 
+       ok = validateJWT(bear, config.api.secret);
+    } catch {
+      ok = false;
+    }
+
     if (!ok) {
       return respondWithError(res, 401, "JWT not valid")
     }
 
-    // ! causes failure
-/*
-    if (!userId || userId !== ok) {
+ 
+    if (userId && userId !== ok) {
       return respondWithError(res, 401, "UserID does not match session token")
     }
-*/
+ 
     if (typeof body !== "string") {
         throw new BadRequestError("Invalid payload");
     }

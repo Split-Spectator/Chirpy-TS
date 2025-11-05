@@ -1,5 +1,7 @@
 import express from "express";
 import postgres from "postgres";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { drizzle } from "drizzle-orm/postgres-js";
 import {config} from "./config.js"
 import {handlerReadiness}  from "./handlers/health.js";
 import {handlerValchip, handlerGetAllChirps, GetChirpOne} from "./handlers/chips.js";
@@ -8,8 +10,8 @@ import {middlewareMetricsInc, errorMiddleWare,} from "./app/middleware.js";
 import { handlerMetrics } from "./app/api/handlerMetrics.js";
 import {handlerReset} from "./app/api/reset.js";
 import {handlerUsers, handlerLogin} from "./handlers/handlerUsers.js"
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import { drizzle } from "drizzle-orm/postgres-js";
+import { refreshToken, revokeRefreshToken } from "./handlers/auth.js";
+
 
 
 const migrationClient = postgres(config.db.url, { max: 1 });
@@ -46,6 +48,12 @@ app.post("/api/users", (req, res, next) => {
 });
 app.post("/api/login", (req, res, next) => {
   Promise.resolve(handlerLogin(req, res)).catch(next);
+});
+app.post("/api/refresh", (req, res, next) => {
+  Promise.resolve(refreshToken(req, res)).catch(next);
+});
+app.post("/api/revoke", (req, res, next) => {
+  Promise.resolve(revokeRefreshToken(req, res)).catch(next);
 });
 
 app.use(errorMiddleWare);

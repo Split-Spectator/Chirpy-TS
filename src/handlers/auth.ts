@@ -1,9 +1,14 @@
 import * as argon2 from "argon2";
 import { JsonWebTokenError } from "jsonwebtoken";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { getEnv } from "../config.js";  
+import { config, getEnv } from "../config.js";  
 import type { Request, Response, NextFunction,  } from "express";
 import { UserNotAuthenticatedError } from "./errors.js";
+import { GetRefreshToken } from "../db/queries/users.js";
+import { respondWithJSON, respondWithError, respondNoContent } from "../app/helperJson.js";
+import { revokeToken } from "../db/queries/users.js";
+import { randomBytes } from 'node:crypto';
+ 
 
 export async function hashPassword(password: string): Promise<string> {
 try {
@@ -26,10 +31,10 @@ export async function checkPasswordHash(password: string, hash: string): Promise
       }
 }
 
-//type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
 
-export function makeJWT(userID: string, expiresIn: number, secret: string): string {
+export function makeJWT(userID: string,  secret: string): string {
   const iat = Math.floor(Date.now() / 1000);
+  const expiresIn = 3600;
   const payload = { iss: "chirpy", sub: userID, iat, exp: iat + expiresIn };
   return jwt.sign(payload, secret);
 }
@@ -51,3 +56,33 @@ export const getBearerToken = (req: Request) => {
     }
   return splitToken[1];
 };
+
+
+export function makeRefreshToken(): string {
+  const buf = randomBytes(32);
+  return buf.toString('hex');
+}
+
+export const refreshToken = async (req: Request, res: Response) => {
+  const bear = await getBearerToken(req);
+  const valid = await GetRefreshToken("token", bear);
+  if  (!valid) {
+    return respondWithError(res, 401, "token not valid");
+  }
+  const now = Date.now();
+  if (now > Number(valid.expiresAt) || valid.revokedAt) {
+    return respondWithError(res, 401, "token expired");
+  }
+  const userID = valid.userId
+  const jwtToken = makeJWT(userID, config.api.secret);
+return respondWithJSON(res, 200, { token: jwtToken })
+}
+
+
+export const revokeRefreshToken = async (req: Request, res: Response) => {
+  const bear = await getBearerToken(req);
+  revokeToken(bear);
+  return respondNoContent(res);
+}
+
+
