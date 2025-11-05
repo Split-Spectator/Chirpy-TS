@@ -81,7 +81,7 @@ return respondWithJSON(res, 200, { token: jwtToken })
 
 export const revokeRefreshToken = async (req: Request, res: Response) => {
   const bear = await getBearerToken(req);
-  revokeToken(bear);
+  await revokeToken(bear);
   return respondNoContent(res);
 }
 

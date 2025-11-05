@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { respondWithJSON, respondWithError } from "../app/helperJson.js";
+import { respondWithJSON, respondWithError, respondNoContent } from "../app/helperJson.js";
 import { BadRequestError, UserNotAuthenticatedError } from "./errors.js";
-import {createChirp, GetAllChirps, GetChirp} from "../db/queries/chips.js";
+import {createChirp, GetAllChirps, GetChirp, DeleteChirp} from "../db/queries/chips.js";
 import { register } from "module";
 import { getBearerToken, validateJWT } from "./auth.js";
 import { config } from "../config.js";
@@ -76,3 +76,32 @@ export async function GetChirpOne(req: Request, res: Response){
     return res.status(200).json(chirp);
 }
 
+
+export async function DeleteChirpRequest(req: Request, res: Response){
+  let bear = await getBearerToken(req);
+  let ok: string | false = false;
+  try { 
+     ok = validateJWT(bear, config.api.secret);
+  } catch {
+    ok = false;
+  }
+  if (!ok) {
+    return respondWithError(res, 401, "JWT not valid");
+  }
+
+const { chirpID } = req.params;
+const chirp = await GetChirp(chirpID);
+if (!chirp) {
+    return res.status(404).json({ error: "Chirp not found" });
+}
+
+if (chirp.userId !== ok) {
+  return respondWithError(res, 403, "Not authorized");
+}
+try { 
+await DeleteChirp(chirp.id);
+} catch {
+  respondWithError(res, 500, "Deleting Chrip Failed");
+}
+return respondNoContent(res);
+};

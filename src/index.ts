@@ -4,7 +4,7 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle } from "drizzle-orm/postgres-js";
 import {config} from "./config.js"
 import {handlerReadiness}  from "./handlers/health.js";
-import {handlerValchip, handlerGetAllChirps, GetChirpOne} from "./handlers/chips.js";
+import {handlerValchip, handlerGetAllChirps, GetChirpOne, DeleteChirpRequest} from "./handlers/chips.js";
 import {middlewareLogResponses} from "./app/log.js";
 import {middlewareMetricsInc, errorMiddleWare,} from "./app/middleware.js";
 import { handlerMetrics } from "./app/api/handlerMetrics.js";
@@ -36,6 +36,9 @@ app.get("/api/chirps", (req, res, next) => {
 });
 app.get("/api/chirps/:chirpID", (req, res, next) => {
   Promise.resolve(GetChirpOne(req, res)).catch(next);
+});
+app.delete("/api/chirps/:chirpID", (req, res, next) => {
+  Promise.resolve(DeleteChirpRequest(req, res)).catch(next);
 });
 app.post("/admin/reset", (req, res, next) => {
   Promise.resolve(handlerReset(req, res)).catch(next);
