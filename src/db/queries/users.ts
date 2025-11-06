@@ -63,3 +63,11 @@ export const resetPasswordQuery = async (userInfo: SelectUser) => {
     .where(eq(users.id, userInfo.id));
 }
 
+export const makeRed = async (userId: string) => {
+  await db.update(users)
+  .set({
+    updatedAt: sql`NOW()` ,
+    isChirpyRed: true,
+  })
+  .where(eq(users.id, userId ));
+}

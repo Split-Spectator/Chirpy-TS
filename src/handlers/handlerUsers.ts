@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction,  } from "express";
-import { respondWithJSON, respondWithError } from "../app/helperJson.js";
+import type { Request, Response } from "express";
+import { respondWithJSON, respondWithError} from "../app/helperJson.js";
 import { BadRequestError } from "./errors.js";
 import {createUser, GetUser, addRefreshToken, GetUserByID, resetPasswordQuery} from "../db/queries/users.js";
 import {hashPassword, checkPasswordHash, makeJWT, makeRefreshToken } from "./auth.js";
@@ -31,6 +31,7 @@ export async function handlerUsers(req: Request, res: Response) {
     email: user.email,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    isChirpyRed: user.isChirpyRed,
   });
 }
 
@@ -73,6 +74,7 @@ export async function handlerLogin(req: Request, res: Response) {
      updatedAt: user.updatedAt,
      token: jwtToken,
      refreshToken: refreshToken,
+     isChirpyRed: user.isChirpyRed,
    });
  }
  
@@ -102,6 +104,7 @@ export async function handlerLogin(req: Request, res: Response) {
       hashedPassword,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      isChirpyRed: user.isChirpyRed,
     });
   } catch {
     return respondWithError(res, 500, "Failed to update password / email");
@@ -114,5 +117,7 @@ export async function handlerLogin(req: Request, res: Response) {
     email: updated.email,
     createdAt: updated.createdAt,
     updatedAt: updated.updatedAt,
+    isChirpyRed: updated.isChirpyRed,
   });
 }
+ 

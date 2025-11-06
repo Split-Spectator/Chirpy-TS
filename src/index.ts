@@ -11,6 +11,7 @@ import { handlerMetrics } from "./app/api/handlerMetrics.js";
 import {handlerReset} from "./app/api/reset.js";
 import {handlerUsers, handlerLogin, resetPassword} from "./handlers/handlerUsers.js"
 import { refreshToken, revokeRefreshToken } from "./handlers/auth.js";
+import { handlerMakeRed } from "./handlers/webhooks.js";
 
 
 
@@ -48,6 +49,9 @@ app.post("/api/chirps", (req, res, next) => {
 });
 app.post("/api/users", (req, res, next) => {
   Promise.resolve(handlerUsers(req, res)).catch(next);
+});
+app.post("/api/polka/webhooks", (req, res, next) => {
+  Promise.resolve(handlerMakeRed(req, res)).catch(next);
 });
 app.post("/api/login", (req, res, next) => {
   Promise.resolve(handlerLogin(req, res)).catch(next);
