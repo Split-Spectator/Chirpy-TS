@@ -57,15 +57,18 @@ export async function handlerValchip(req: Request, res: Response) {
     });
   }  
  
- 
- 
-export async function handlerGetAllChirps(req: Request, res: Response){
-  const chirps = await GetAllChirps();
-        if (chirps.length === 0) {
-          return respondWithJSON(res, 200, { chirps: []});
-        }
-    return respondWithJSON(res, 200, chirps );
-}
+  export async function handlerGetChirps(req: Request, res: Response) {
+    const q = req.query.authorId;
+    const authorId = typeof q === "string" ? q : "";
+  
+    if (authorId) {
+      const rows = await GetChirpByAuthor(authorId);
+      return respondWithJSON(res, 200, rows ?? []);
+    } else {
+      const rows = await GetAllChirps();
+      return respondWithJSON(res, 200, rows ?? []);
+    }
+  }
 
 export async function GetChirpOne(req: Request, res: Response){
     const { chirpID } = req.params;
@@ -106,16 +109,4 @@ await DeleteChirp(chirp.id);
 return respondNoContent(res);
 };
 
-export async function handlerGetChirpByAuthor(req: Request, res: Response) {
-  let authorId = "";
-let authorIdQuery = req.query.authorId;
-if (typeof authorIdQuery === "string") {
-  authorId = authorIdQuery;
-}
-if (!authorId) {
-  await handlerGetAllChirps(req, res);
-}
-
-const chirps = await GetChirpByAuthor(authorId);
-return respondWithJSON(res, 200, chirps)
-}
+ 
