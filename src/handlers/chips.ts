@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { respondWithJSON, respondWithError, respondNoContent } from "../app/helperJson.js";
 import { BadRequestError, UserNotAuthenticatedError } from "./errors.js";
-import {createChirp, GetAllChirps, GetChirp, DeleteChirp} from "../db/queries/chips.js";
+import {createChirp, GetAllChirps, GetChirp, DeleteChirp, GetChirpByAuthor} from "../db/queries/chips.js";
 import { register } from "module";
 import { getBearerToken, validateJWT } from "./auth.js";
 import { config } from "../config.js";
@@ -105,3 +105,17 @@ await DeleteChirp(chirp.id);
 }
 return respondNoContent(res);
 };
+
+export async function handlerGetChirpByAuthor(req: Request, res: Response) {
+  let authorId = "";
+let authorIdQuery = req.query.authorId;
+if (typeof authorIdQuery === "string") {
+  authorId = authorIdQuery;
+}
+if (!authorId) {
+  await handlerGetAllChirps(req, res);
+}
+
+const chirps = await GetChirpByAuthor(authorId);
+return respondWithJSON(res, 200, chirps)
+}
