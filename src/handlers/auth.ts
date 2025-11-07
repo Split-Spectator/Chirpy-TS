@@ -2,7 +2,7 @@ import * as argon2 from "argon2";
 import { JsonWebTokenError } from "jsonwebtoken";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { config, getEnv } from "../config.js";  
-import type { Request, Response, NextFunction,  } from "express";
+import type { Request, Response, NextFunction,   } from "express";
 import { UserNotAuthenticatedError } from "./errors.js";
 import { GetRefreshToken } from "../db/queries/users.js";
 import { respondWithJSON, respondWithError, respondNoContent } from "../app/helperJson.js";
@@ -85,4 +85,15 @@ export const revokeRefreshToken = async (req: Request, res: Response) => {
   return respondNoContent(res);
 }
 
+export const getApiKey = (req: Request) => {
+  const rawReq = req.headers.authorization;
+    if (rawReq === undefined) {
+      throw new UserNotAuthenticatedError("Missing Auth Header");
+    }
+  const splitToken = rawReq.split(" ");
+    if (splitToken.length < 2 || splitToken[0] !== "ApiKey") {
+      throw new UserNotAuthenticatedError("Api Key malformed request");
+    }
+  return splitToken[1];
+};
 

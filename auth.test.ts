@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { makeJWT, validateJWT, hashPassword, checkPasswordHash} from "./src/handlers/auth";
+import { makeJWT, validateJWT, hashPassword, checkPasswordHash, getApiKey } from "./src/handlers/auth";
 
 describe("Password Hashing", () => {
     const password1 = "correctPassword123!";
@@ -33,8 +33,8 @@ describe("JWT make and verify", () => {
     let jwtCheck2: string;
 
     beforeAll(async () => {
-        jwtCheck1 = await makeJWT(userID_A, 5000, secret_A);
-        jwtCheck2 = await makeJWT(userID_B, 2500, secret_B)
+        jwtCheck1 = await makeJWT(userID_A, secret_A);
+        jwtCheck2 = await makeJWT(userID_B, secret_B)
     })
 
     it("should return userID from the JWT", async () => {
@@ -46,4 +46,20 @@ describe("JWT make and verify", () => {
         const result = await validateJWT(jwtCheck2 , secret_B);
         expect(result).toBe(userID_B);
       });
+});
+
+
+describe("Get API Key from Request", () => {
+  const RequestA = { headers: { authorization: "ApiKey THE_KEY_HERE" } };
+  const RequestB = { headers: { authorization: "ApiKey 561868198190849404198049089018949800984" } } 
+
+  it("should extract api key from request", async () => {
+    const result = await getApiKey(RequestA);
+    expect(result).toBe("THE_KEY_HERE");
+  });
+
+  it("should return true for the correct password", async () => {
+      const result = await getApiKey(RequestB);
+      expect(result).toBe("561868198190849404198049089018949800984");
+    });
 });

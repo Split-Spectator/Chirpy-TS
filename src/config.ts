@@ -13,6 +13,7 @@ type Config = {
 type APIConfig = {
   fileserverhits: number;
   secret: string;
+  polka: string;
 };
 
 type DBConfig = {
@@ -32,6 +33,7 @@ type DBConfig = {
     api: {
       fileserverhits: 0,
       secret: getEnv("SECRET"),
+      polka: getEnv("POLKA_KEY")
     },
     db: {
       url: getEnv("DB_URL"),
