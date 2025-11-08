@@ -59,13 +59,24 @@ export async function handlerValchip(req: Request, res: Response) {
  
   export async function handlerGetChirps(req: Request, res: Response) {
     const q = req.query.authorId;
+    const s = req.query.sort;
     const authorId = typeof q === "string" ? q : "";
+    const sort = typeof s === "string" ? s : "";
+
+
   
     if (authorId) {
       const rows = await GetChirpByAuthor(authorId);
+      if (sort && sort === "desc") {
+        rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      }
       return respondWithJSON(res, 200, rows ?? []);
+
     } else {
       const rows = await GetAllChirps();
+      if (sort && sort === "desc") {
+        rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());  
+      }
       return respondWithJSON(res, 200, rows ?? []);
     }
   }
